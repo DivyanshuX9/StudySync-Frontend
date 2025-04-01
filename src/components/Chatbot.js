@@ -19,7 +19,7 @@ function Chatbot() {
     e.preventDefault();
     setLoading(true);
 
-    let url = "http://localhost:8000/chat";
+    let url = "https://study-sync-backend-5b8v.onrender.com/chat";
     let options = {};
 
     try {
