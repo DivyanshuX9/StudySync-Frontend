@@ -1,0 +1,152 @@
+/* General Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+:root {
+    --primary: #6a0dad; /* Deep Violet */
+    --primary-dark: #4b0082; /* Darker Violet */
+    --secondary: #1e90ff; /* Bright Blue */
+    --accent: #007fff; /* Electric Blue */
+    --background: #0a0a0a; /* Deep Black */
+    --card-bg: rgba(255, 255, 255, 0.08); /* Dark Grey-Black */
+    --text-primary: #ffffff; /* White */
+    --text-secondary: #b0b0b0; /* Light Grey */
+}
+
+body {
+    min-height: 100vh;
+    color: var(--text-primary);
+    background-color: var(--background);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+}
+
+.container {
+    background: var(--card-bg);
+    border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 1000px;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+    padding: 20px;
+}
+
+/* Task Manager Styles */
+.task-list {
+    margin-top: 20px;
+}
+
+.task-item {
+    background: var(--card-bg);
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-left: 5px solid var(--secondary);
+}
+
+.task-item.completed {
+    border-left: 5px solid #28a745;
+    text-decoration: line-through;
+    color: gray;
+}
+
+.card {
+    background: var(--card-bg);
+    border-radius: 8px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+    margin-bottom: 20px;
+    padding: 20px;
+    border-left: 5px solid var(--secondary);
+}
+
+.card-header {
+    font-weight: bold;
+    background: var(--secondary);
+    color: white;
+    padding: 10px;
+    border-radius: 8px 8px 0 0;
+}
+
+input, select, textarea {
+    width: 100%;
+    padding: 10px;
+    margin-top: 20px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background: var(--background);
+    color: var(--text-primary);
+}
+
+button {
+    background: var(--secondary);
+    color: white;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.3s;
+    margin: 5px;
+}
+
+button:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+}
+
+/* Progress Bar */
+.progress {
+    background: #2c2c2c;
+    border-radius: 20px;
+    height: 25px;
+    width: 100%;
+    overflow: hidden;
+    margin-top: 10px;
+    position: relative;
+}
+
+.progress-bar {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: white;
+    transition: width 0.4s ease-in-out;
+    margin-top: 7px;
+    border-radius: 20px;
+   
+}
+
+.progress-bar.low {
+    background: linear-gradient(to right, red); 
+}
+
+.progress-bar.medium {
+    background: linear-gradient(to right, red); 
+}
+
+.progress-bar.high {
+    background: linear-gradient(to right, red); 
+}
+
+
+/* Task Container */
+.progress-container {
+    margin-top: 40px;
+    text-align: center;
+}
+
+  

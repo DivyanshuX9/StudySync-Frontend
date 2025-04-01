@@ -1,0 +1,117 @@
+/* Navbar */
+.navbar {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(15px);
+    padding: 1rem 2rem;
+    position: fixed;
+    width: 100%;
+    top: 0;
+    left: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 1000;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--text-primary);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .nav-links {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+  }
+  
+  .nav-links a {
+    color: var(--text-primary);
+    text-decoration: none;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    transition: all 0.3s ease-in-out;
+  }
+  
+  .nav-links a:hover {
+    color: var(--secondary);
+  }
+  
+  /* Features Dropdown */
+  .features-dropdown {
+    position: relative;
+  }
+  
+  .features-btn {
+    background: var(--primary);
+    color: white;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s;
+  }
+  
+  .features-btn:hover {
+    background: var(--primary-dark);
+  }
+  
+  /* Dropdown Content */
+  .features-content {
+    display: none;
+    position: absolute;
+    background: rgba(15, 23, 42, 0.95);
+    min-width: 220px;
+    top: 100%;
+    left: 0;
+    border-radius: 8px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    padding: 10px;
+  }
+  
+  .features-dropdown:hover .features-content {
+    display: block;
+  }
+  
+  .features-content a {
+    display: block;
+    color: var(--text-primary);
+    padding: 10px;
+    text-decoration: none;
+    border-radius: 6px;
+  }
+  
+  .features-content a:hover {
+    background: var(--primary);
+  }
+  
+  /* User Authentication */
+  .user-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  .logout-btn,
+  .sign-in-btn {
+    background: var(--primary);
+    color: white;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s;
+  }
+  
+  .logout-btn:hover,
+  .sign-in-btn:hover {
+    background: var(--primary-dark);
+  }
+  

@@ -1,0 +1,132 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+
+
+/* Container */
+.subject-container {
+    background: var(--card-bg);
+    border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+    width: 100%;
+    max-width: 900px;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    margin-top: 100px;
+}
+
+/* Heading */
+h2 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+/* Subject Box */
+.subject {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    position: relative;
+    transition: all 0.3s ease-in-out;
+}
+
+.subject:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(255, 255, 255, 0.1);
+}
+
+/* Buttons */
+button {
+    background: var(--primary);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-weight: 500;
+}
+
+button:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+}
+
+/* Delete Button */
+.delete-btn {
+    background: darkred;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.delete-btn:hover {
+    background: red;
+}
+
+/* Chapter Styling */
+.chapter {
+    background: rgba(255, 255, 255, 0.08);
+    padding: 12px;
+    border-radius: 10px;
+    margin-top: 10px;
+}
+
+/* File Input */
+input[type="file"] {
+    margin-top: 10px;
+    padding: 5px;
+    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+    font-size: 14px;
+    text-align: center;
+    border-radius: 5px;
+    transition: all 0.3s ease-in-out;
+}
+
+input[type="file"]:focus {
+    outline: none;
+    box-shadow: 0 0 8px var(--secondary);
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* PDF List */
+.pdf-list {
+    margin-top: 10px;
+}
+
+.pdf-list div {
+    display: flex;
+    justify-content: space-between;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 8px;
+    border-radius: 8px;
+    margin-top: 5px;
+    font-size: 14px;
+}
+
+/* Media Queries */
+@media (max-width: 768px) {
+    .subject-container {
+        width: 95%;
+    }
+
+    button {
+        font-size: 14px;
+        padding: 8px 12px;
+    }
+
+    input[type="file"] {
+        font-size: 12px;
+        padding: 5px;
+    }
+}

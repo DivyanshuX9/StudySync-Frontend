@@ -1,0 +1,101 @@
+/* General chatbot container */
+.chatbot-container {
+  width: 60%;
+  margin: 50px auto;
+  padding: 20px;
+  background-color: var(--background); /* Using the background color from LandingPage */
+  color: var(--text-primary); /* Text color from LandingPage */
+  border-radius: 10px;
+  box-shadow: 0px 4px 10px rgba(20, 184, 166, 0.3); /* Updated the shadow color */
+  text-align: center;
+}
+
+/* Title and subtitle */
+.chatbot-title {
+  font-size: 24px;
+  color: var(--secondary); /* Using the secondary color from LandingPage */
+  font-weight: bold;
+}
+
+.chatbot-subtitle {
+  font-size: 14px;
+  color: var(--text-secondary); /* Using the secondary text color from LandingPage */
+}
+
+/* Options for input type */
+.chatbot-options {
+  margin: 20px 0;
+}
+
+.chatbot-options button {
+  background: none;
+  border: 2px solid var(--secondary); /* Using the secondary color from LandingPage */
+  color: var(--secondary); /* Text color from LandingPage */
+  padding: 10px 15px;
+  margin: 5px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.chatbot-options button.active,
+.chatbot-options button:hover {
+  background: var(--secondary); /* Background color from LandingPage */
+  color: black;
+}
+
+/* Input section */
+.input-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.input-section input[type="text"] {
+  width: 60%;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid var(--secondary); /* Border color from LandingPage */
+  background-color: var(--background); /* Background color from LandingPage */
+  color: var(--text-primary); /* Text color from LandingPage */
+}
+
+.input-section input[type="file"] {
+  color: var(--text-primary); /* Text color from LandingPage */
+}
+
+.send-button {
+  background-color: var(--secondary); /* Background color from LandingPage */
+  color: black;
+  border: none;
+  padding: 10px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 18px;
+  transition: 0.3s;
+}
+
+.send-button:hover {
+  background-color: var(--primary-dark); /* Darker primary color from LandingPage */
+}
+
+/* Response section */
+.response-container {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: var(--background); /* Background color from LandingPage */
+  border-radius: 5px;
+  border: 1px solid var(--secondary); /* Border color from LandingPage */
+}
+
+.response-container strong {
+  color: var(--secondary); /* Text color from LandingPage */
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .chatbot-container {
+    width: 90%;
+  }
+}
