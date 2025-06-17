@@ -45,12 +45,6 @@ function LandingPage({ user }) {
 
       {/* Main Content */}
       <main className="main-content">
-        <h1>Web Programming 2024-25 (TG2)</h1>
-        <h2>Team Members</h2>
-        <h3>Harshal Kulkarni - 23BDS1040 (CSE Data Science)</h3>
-        <h3>Saumyarup Guha   - 23BDS1128 (CSE Data Science)</h3>
-        <h3>Divyanshu Sharma - 23BDS1155 (CSE Data Science)</h3>
-
         <h1>Welcome to StudySync</h1>
         <p>
           "Organize, track, and excel—your all-in-one digital study planner for
