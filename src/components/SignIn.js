@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth, provider } from './firebase'; // Ensure correct import
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, updateProfile } from 'firebase/auth';
@@ -11,14 +11,7 @@ const SignIn = () => {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [error, setError] = useState('');
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 767);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= 767);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   const handleSignIn = async (e) => {
     e.preventDefault();
@@ -54,8 +47,8 @@ const SignIn = () => {
 
   const handleGoogleSignIn = async () => {
     try {
-      const result = await signInWithPopup(auth, provider);
-      navigate('/'); // Redirect to Landing Page
+      await signInWithPopup(auth, provider);
+      navigate('/');
     } catch (error) {
       setError('Google Sign-In failed. Please try again.');
     }
