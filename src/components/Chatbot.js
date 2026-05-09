@@ -1,107 +1,156 @@
-import React, { useState, useEffect } from "react";
-import "./Chatbot.css";
+import React, { useState, useEffect, useRef } from "react";
+import { auth, onAuthStateChanged } from "./firebase";
+import Navbar from "./Navbar";
 import { FaPaperPlane } from "react-icons/fa";
+import "./Chatbot.css";
+
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
 function Chatbot() {
+  const [user, setUser] = useState(null);
   const [prompt, setPrompt] = useState("");
   const [file, setFile] = useState(null);
-  const [response, setResponse] = useState("");
   const [loading, setLoading] = useState(false);
   const [inputType, setInputType] = useState("text");
-  const [chatHistory, setChatHistory] = useState([]);
   const [additionalInput, setAdditionalInput] = useState("");
+  const [serverOk, setServerOk] = useState(null); // null=checking, true=ok, false=down
+  const [chatHistory, setChatHistory] = useState([
+    { sender: "Darwin", text: "Hello! I'm Darwin, your AI study assistant. Ask me anything or upload a PDF/image." }
+  ]);
+  const bottomRef = useRef(null);
 
   useEffect(() => {
-    setChatHistory([{ sender: "Darwin", text: "Hello! I am Darwin, your AI assistant. How can I help you today?" }]);
+    const unsub = onAuthStateChanged(auth, setUser);
+    return unsub;
   }, []);
+
+  // Health check on mount
+  useEffect(() => {
+    fetch(`${API_URL}/health`)
+      .then(r => r.ok ? setServerOk(true) : setServerOk(false))
+      .catch(() => setServerOk(false));
+  }, []);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chatHistory]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const userText = inputType === "text" ? prompt : (file?.name || "File uploaded");
+    if (!userText.trim() && !file) return;
+
+    setChatHistory((prev) => [...prev, { sender: "You", text: userText }]);
+    setPrompt("");
     setLoading(true);
 
-    let url = "https://study-sync-backend-5b8v.onrender.com/chat";
-    let options = {};
-
     try {
+      let res;
       if (inputType === "text") {
-        // Sending text prompt
-        options = {
+        res = await fetch(`${API_URL}/chat`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ prompt, inputType, additionalInput }),
-        };
-      } else if (inputType === "image" || inputType === "pdf") {
-        // Sending image or PDF with additional input
-        const formData = new FormData();
-        formData.append("file", file); // appending the file to FormData
-        formData.append("inputType", inputType); // Appending input type (image/pdf)
-        formData.append("additionalInput", additionalInput); // Appending additional input
-
-        url = "http://localhost:8000/chat"; // The media endpoint
-        options = { method: "POST", body: formData };
-      }
-
-      setChatHistory([...chatHistory, { sender: "You", text: prompt }]);
-      setPrompt(""); // Clear input field
-
-      const res = await fetch(url, options);
-      const data = await res.json();
-
-      if (data.response) {
-        setResponse(data.response);
-        setChatHistory([...chatHistory, { sender: "You", text: prompt }, { sender: "Darwin", text: data.response }]);
+        });
       } else {
-        setResponse("No response received");
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("inputType", inputType);
+        formData.append("additionalInput", additionalInput);
+        res = await fetch(`${API_URL}/chat`, { method: "POST", body: formData });
       }
-    } catch (error) {
-      setResponse("Error connecting to the backend");
+
+      const data = await res.json();
+      setChatHistory((prev) => [...prev, {
+        sender: "Darwin",
+        text: data.response || "No response received.",
+      }]);
+    } catch {
+      setChatHistory((prev) => [...prev, { sender: "Darwin", text: "⚠️ Error connecting to the server." }]);
     } finally {
       setLoading(false);
+      setFile(null);
+      setAdditionalInput("");
     }
   };
 
   return (
-    <div className="chatbot-container">
-      <h1 className="chatbot-title">How can I help you today?</h1>
-      <p className="chatbot-subtitle">Type your query below or select a media file.</p>
-      <div className="chat-history">
-        {chatHistory.map((msg, index) => (
-          <p key={index} className={msg.sender === "You" ? "user-msg" : "bot-msg"}>
-            <strong>{msg.sender}:</strong> {msg.text}
-          </p>
-        ))}
-      </div>
-      <div className="chatbot-options">
-        <button className={inputType === "text" ? "active" : ""} onClick={() => setInputType("text")}>Text</button>
-        <button className={inputType === "image" ? "active" : ""} onClick={() => setInputType("image")}>Image</button>
-        <button className={inputType === "pdf" ? "active" : ""} onClick={() => setInputType("pdf")}>PDF</button>
-      </div>
-      <div className="input-section">
-        {inputType === "text" ? (
-          <input
-            type="text"
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            placeholder="Type your prompt here..."
-          />
-        ) : (
-          <div>
-            <input
-              type="file"
-              accept={inputType === "image" ? "image/*" : "application/pdf"}
-              onChange={(e) => setFile(e.target.files[0])}
-            />
-            <input
-              type="text"
-              value={additionalInput}
-              onChange={(e) => setAdditionalInput(e.target.value)}
-              placeholder="Enter additional input"
-            />
+    <div className="page-wrapper">
+      <Navbar user={user} />
+      <div className="chatbot-page">
+        <div className="chat-header">
+          <div className="chat-header-top">
+            <div>
+              <h1>🤖 Darwin AI</h1>
+              <p>Your intelligent study assistant</p>
+            </div>
+            <div className={`server-status ${serverOk === null ? 'checking' : serverOk ? 'online' : 'offline'}`}>
+              <span className="status-dot" />
+              {serverOk === null ? 'Connecting…' : serverOk ? 'Server online' : 'Server offline — start backend'}
+            </div>
           </div>
-        )}
-        <button onClick={handleSubmit} disabled={loading} className="send-button">
-          {loading ? "..." : <FaPaperPlane />}
-        </button>
+        </div>
+
+        <div className="chat-window">
+          {chatHistory.map((msg, i) => (
+            <div key={i} className={`chat-bubble ${msg.sender === "You" ? "user" : "bot"}`}>
+              <span className="bubble-sender">{msg.sender}</span>
+              <p className="bubble-text">{msg.text}</p>
+            </div>
+          ))}
+          {loading && (
+            <div className="chat-bubble bot">
+              <span className="bubble-sender">Darwin</span>
+              <p className="bubble-text typing">
+                <span /><span /><span />
+              </p>
+            </div>
+          )}
+          <div ref={bottomRef} />
+        </div>
+
+        <div className="chat-input-area">
+          <div className="input-type-tabs">
+            {["text", "image", "pdf"].map((t) => (
+              <button key={t} className={inputType === t ? "active" : ""} onClick={() => { setInputType(t); setFile(null); }}>
+                {t.toUpperCase()}
+              </button>
+            ))}
+          </div>
+
+          <form className="input-row" onSubmit={handleSubmit}>
+            {inputType === "text" ? (
+              <input
+                type="text"
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                placeholder="Ask Darwin anything..."
+                disabled={loading}
+              />
+            ) : (
+              <div className="file-input-group">
+                <label className="file-label">
+                  {file ? `📎 ${file.name}` : `Upload ${inputType === "image" ? "Image" : "PDF"}`}
+                  <input
+                    type="file"
+                    accept={inputType === "image" ? "image/*" : "application/pdf"}
+                    onChange={(e) => setFile(e.target.files[0])}
+                  />
+                </label>
+                <input
+                  type="text"
+                  value={additionalInput}
+                  onChange={(e) => setAdditionalInput(e.target.value)}
+                  placeholder="Add a question about this file..."
+                  disabled={loading}
+                />
+              </div>
+            )}
+            <button type="submit" disabled={loading} className="send-btn">
+              <FaPaperPlane />
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );
