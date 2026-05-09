@@ -158,17 +158,28 @@
   justify-content: center;
   width: 20px;
   height: 20px;
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.9);
   border-radius: 50%;
-  font-size: 0.9rem;
-  transition: left 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.3s;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  font-size: 1rem;
+  transition: left 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.3s, transform 0.3s;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.25);
   backdrop-filter: blur(4px);
 }
 
 .ray-toggle input:checked ~ .ray-thumb {
   left: calc(100% - 22px);
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 1);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.ray-toggle input:checked ~ .ray-thumb:hover {
+  transform: translateY(-50%) scale(1.15);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+
+.ray-track:hover {
+  background: rgba(128, 128, 128, 0.35);
+  border-color: rgba(128, 128, 128, 0.5);
 }
 
 /* ── Dynamic Island (mobile only) ───────────────────── */

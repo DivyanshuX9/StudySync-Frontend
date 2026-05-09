@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef } from "react";
-import { auth, onAuthStateChanged } from "./firebase";
-import Navbar from "./Navbar";
+import { useEffect, useRef, useState } from "react";
 import { FaPaperPlane } from "react-icons/fa";
 import "./Chatbot.css";
+import { auth, onAuthStateChanged } from "./firebase";
+import Navbar from "./Navbar";
 
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
@@ -24,11 +24,26 @@ function Chatbot() {
     return unsub;
   }, []);
 
-  // Health check on mount
+  // Health check on mount with retry mechanism
   useEffect(() => {
-    fetch(`${API_URL}/health`)
-      .then(r => r.ok ? setServerOk(true) : setServerOk(false))
-      .catch(() => setServerOk(false));
+    const checkServer = async (attempt = 0) => {
+      try {
+        const res = await fetch(`${API_URL}/health`, { signal: AbortSignal.timeout(5000) });
+        if (res.ok) {
+          setServerOk(true);
+        } else {
+          setServerOk(false);
+        }
+      } catch (err) {
+        if (attempt < 2) {
+          // Retry after 3 seconds
+          setTimeout(() => checkServer(attempt + 1), 3000);
+        } else {
+          setServerOk(false);
+        }
+      }
+    };
+    checkServer();
   }, []);
 
   useEffect(() => {
@@ -40,33 +55,52 @@ function Chatbot() {
     const userText = inputType === "text" ? prompt : (file?.name || "File uploaded");
     if (!userText.trim() && !file) return;
 
+    // Wake up server if offline
+    if (serverOk === false) {
+      setChatHistory((prev) => [...prev, { sender: "Darwin", text: "🔄 Waking up the server... This may take 30-60 seconds on first call. Please wait." }]);
+      // Trigger wake-up call
+      fetch(`${API_URL}/health`).catch(() => {});
+    }
+
     setChatHistory((prev) => [...prev, { sender: "You", text: userText }]);
     setPrompt("");
     setLoading(true);
 
     try {
       let res;
+      const requestOptions = { signal: AbortSignal.timeout(90000) }; // 90s timeout for cold start
+      
       if (inputType === "text") {
         res = await fetch(`${API_URL}/chat`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ prompt, inputType, additionalInput }),
+          ...requestOptions
         });
       } else {
         const formData = new FormData();
         formData.append("file", file);
         formData.append("inputType", inputType);
         formData.append("additionalInput", additionalInput);
-        res = await fetch(`${API_URL}/chat`, { method: "POST", body: formData });
+        res = await fetch(`${API_URL}/chat`, { method: "POST", body: formData, ...requestOptions });
       }
 
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
+      
+      // Update server status to online
+      setServerOk(true);
+      
       setChatHistory((prev) => [...prev, {
         sender: "Darwin",
         text: data.response || "No response received.",
       }]);
-    } catch {
-      setChatHistory((prev) => [...prev, { sender: "Darwin", text: "⚠️ Error connecting to the server." }]);
+    } catch (err) {
+      const errorMsg = err.name === 'AbortError' 
+        ? "⏱️ Request timed out. Server may still be starting. Try again in a moment."
+        : "⚠️ Error connecting to the server. Make sure the backend is running.";
+      setChatHistory((prev) => [...prev, { sender: "Darwin", text: errorMsg }]);
+      setServerOk(false);
     } finally {
       setLoading(false);
       setFile(null);
