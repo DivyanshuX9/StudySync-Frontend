@@ -1,110 +1,139 @@
 import React, { useState, useEffect } from "react";
+import { auth, onAuthStateChanged } from "./firebase";
+import Navbar from "./Navbar";
 import "./SubjectManager.css";
 
-
 const SubjectManager = () => {
-  const [subjects, setSubjects] = useState([]);
+  const [user, setUser] = useState(null);
+  const [subjects, setSubjects] = useState(() => JSON.parse(localStorage.getItem("subjects")) || []);
+  const [newSubjectName, setNewSubjectName] = useState("");
+  const [newChapterNames, setNewChapterNames] = useState({});
 
   useEffect(() => {
-    const storedSubjects = JSON.parse(localStorage.getItem("subjects")) || [];
-    setSubjects(storedSubjects);
+    const unsub = onAuthStateChanged(auth, setUser);
+    return unsub;
   }, []);
 
   useEffect(() => {
     localStorage.setItem("subjects", JSON.stringify(subjects));
   }, [subjects]);
 
-  const addSubject = () => {
-    const subjectName = prompt("Enter subject name:");
-    if (!subjectName) return;
-    setSubjects([...subjects, { name: subjectName, chapters: [] }]);
+  const addSubject = (e) => {
+    e.preventDefault();
+    if (!newSubjectName.trim()) return;
+    setSubjects([...subjects, { name: newSubjectName.trim(), chapters: [] }]);
+    setNewSubjectName("");
   };
 
-  const deleteSubject = (index) => {
-    if (
-      window.confirm(
-        `Delete subject "${subjects[index].name}" and all its data?`
-      )
-    ) {
-      setSubjects(subjects.filter((_, i) => i !== index));
-    }
+  const deleteSubject = (si) => {
+    setSubjects(subjects.filter((_, i) => i !== si));
   };
 
-  const addChapter = (subjectIndex) => {
-    const chapterName = prompt("Enter chapter name:");
-    if (!chapterName) return;
-    const newSubjects = [...subjects];
-    newSubjects[subjectIndex].chapters.push({ name: chapterName, pdfs: [] });
-    setSubjects(newSubjects);
+  const addChapter = (si) => {
+    const name = newChapterNames[si]?.trim();
+    if (!name) return;
+    const updated = [...subjects];
+    updated[si].chapters.push({ name, pdfs: [] });
+    setSubjects(updated);
+    setNewChapterNames({ ...newChapterNames, [si]: "" });
   };
 
-  const uploadPDF = (subjectIndex, chapterIndex, file) => {
+  const deleteChapter = (si, ci) => {
+    const updated = [...subjects];
+    updated[si].chapters.splice(ci, 1);
+    setSubjects([...updated]);
+  };
+
+  const uploadPDF = (si, ci, file) => {
     if (!file) return;
-    const newSubjects = [...subjects];
-    newSubjects[subjectIndex].chapters[chapterIndex].pdfs.push(file.name);
-    setSubjects(newSubjects);
+    const updated = [...subjects];
+    updated[si].chapters[ci].pdfs.push(file.name);
+    setSubjects([...updated]);
   };
 
-  const deletePDF = (subjectIndex, chapterIndex, pdfIndex) => {
-    if (window.confirm("Delete this PDF?")) {
-      const newSubjects = [...subjects];
-      newSubjects[subjectIndex].chapters[chapterIndex].pdfs.splice(pdfIndex, 1);
-      setSubjects(newSubjects);
-    }
+  const deletePDF = (si, ci, pi) => {
+    const updated = [...subjects];
+    updated[si].chapters[ci].pdfs.splice(pi, 1);
+    setSubjects([...updated]);
   };
 
   return (
-    <div className="container">
-      <h2>Subject Manager</h2>
-      <button onClick={addSubject}>+ Add Subject</button>
-      <div id="subjects">
-        {subjects.map((subject, subjectIndex) => (
-          <div key={subjectIndex} className="subject">
-            <h3>{subject.name}</h3>
-            <button onClick={() => addChapter(subjectIndex)}>
-              + Add Chapter
-            </button>
-            <button
-              onClick={() => deleteSubject(subjectIndex)}
-              style={{ background: "red", color: "white" }}
-            >
-              Delete Subject
-            </button>
-            <div className="chapters">
-              {subject.chapters.map((chapter, chapterIndex) => (
-                <div key={chapterIndex} className="chapter">
-                  <h4>{chapter.name}</h4>
-                  <input
-                    type="file"
-                    accept=".pdf"
-                    onChange={(e) =>
-                      uploadPDF(subjectIndex, chapterIndex, e.target.files[0])
-                    }
-                  />
-                  <div className="pdf-list">
-                    {chapter.pdfs.length > 0
-                      ? chapter.pdfs.map((pdf, pdfIndex) => (
-                          <div key={pdfIndex}>
-                            {pdf}
-                            <button
-                              onClick={() =>
-                                deletePDF(subjectIndex, chapterIndex, pdfIndex)
-                              }
-                              style={{ background: "darkred", color: "white" }}
-                            >
-                              Delete
-                            </button>
+    <div className="page-wrapper">
+      <Navbar user={user} />
+      <div className="sm-page">
+        <h1 className="page-title">Subject Manager</h1>
+
+        <form className="add-subject-form" onSubmit={addSubject}>
+          <input
+            type="text"
+            placeholder="New subject name..."
+            value={newSubjectName}
+            onChange={(e) => setNewSubjectName(e.target.value)}
+          />
+          <button type="submit">+ Add Subject</button>
+        </form>
+
+        {subjects.length === 0 && (
+          <p className="empty-state">No subjects yet. Add one above!</p>
+        )}
+
+        <div className="subjects-list">
+          {subjects.map((subject, si) => (
+            <div key={si} className="subject-card">
+              <div className="subject-header">
+                <h2>{subject.name}</h2>
+                <button className="btn-danger-sm" onClick={() => deleteSubject(si)}>Delete Subject</button>
+              </div>
+
+              <div className="add-chapter-row">
+                <input
+                  type="text"
+                  placeholder="New chapter name..."
+                  value={newChapterNames[si] || ""}
+                  onChange={(e) => setNewChapterNames({ ...newChapterNames, [si]: e.target.value })}
+                  onKeyDown={(e) => e.key === "Enter" && addChapter(si)}
+                />
+                <button className="btn-secondary-sm" onClick={() => addChapter(si)}>+ Chapter</button>
+              </div>
+
+              {subject.chapters.length === 0 && (
+                <p className="empty-sub">No chapters yet.</p>
+              )}
+
+              <div className="chapters-list">
+                {subject.chapters.map((chapter, ci) => (
+                  <div key={ci} className="chapter-card">
+                    <div className="chapter-header">
+                      <h3>📖 {chapter.name}</h3>
+                      <button className="btn-icon-danger" onClick={() => deleteChapter(si, ci)} title="Delete chapter">✕</button>
+                    </div>
+
+                    <label className="upload-label">
+                      <span>📎 Upload PDF</span>
+                      <input
+                        type="file"
+                        accept=".pdf"
+                        onChange={(e) => uploadPDF(si, ci, e.target.files[0])}
+                      />
+                    </label>
+
+                    {chapter.pdfs.length > 0 && (
+                      <div className="pdf-list">
+                        {chapter.pdfs.map((pdf, pi) => (
+                          <div key={pi} className="pdf-item">
+                            <span>📄 {pdf}</span>
+                            <button className="btn-icon-danger" onClick={() => deletePDF(si, ci, pi)}>✕</button>
                           </div>
-                        ))
-                      : "No PDFs uploaded"}
+                        ))}
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-     
     </div>
   );
 };

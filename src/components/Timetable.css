@@ -1,111 +1,137 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Segoe UI', sans-serif;
+.timetable-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 6rem 1.5rem 3rem;
 }
 
-
-
-
-.container {
-    background: var(--card-bg);
-    border-radius: 20px;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
-    width: 100%;
-    max-width: 1000px;
-    height: auto;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    position: relative;
-    padding: 20px;
-    margin-top: 100px;
+.tt-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
 }
 
-h2 {
-    text-align: center;
+.tt-actions { display: flex; gap: 0.5rem; }
+
+.btn-action {
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 0.55rem 1.1rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-action:hover { background: var(--card-hover); }
+.btn-save { background: var(--primary); border-color: var(--primary); color: white; }
+.btn-save:hover { background: var(--primary-dark); }
+.btn-clear { border-color: var(--danger); color: var(--danger); }
+.btn-clear:hover { background: rgba(239,68,68,0.1); }
+
+.btn-upload {
+  background: var(--primary-glow);
+  border: 1px dashed var(--primary);
+  color: var(--primary);
+  padding: 0.55rem 1rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.btn-upload input[type="file"] { display: none; }
+.btn-upload:hover { background: rgba(16,185,129,0.18); }
+.btn-upload.uploading { opacity: 0.6; cursor: not-allowed; }
+
+.parse-msg {
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+.parse-err { background: rgba(239,68,68,0.12); color: var(--danger); border: 1px solid rgba(239,68,68,0.25); }
+.parse-ok  { background: rgba(16,185,129,0.12); color: var(--primary); border: 1px solid rgba(16,185,129,0.25); }
+
+.table-wrapper {
+  overflow-x: auto;
+  border-radius: 14px;
+  border: 1px solid var(--border);
 }
 
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 15px;
-    border-radius: 10px;
-    overflow: hidden;
+.tt-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 700px;
 }
 
-th, td {
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    padding: 12px;
-    text-align: center;
-    color: var(--text-primary);
+.tt-table thead tr { background: var(--card); }
+
+.tt-table th {
+  padding: 0.75rem 0.6rem;
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-2);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border);
 }
 
-th {
-    background: rgba(255, 255, 255, 0.1);
-    text-transform: uppercase;
-    font-weight: bold;
+.tt-table td {
+  padding: 0.4rem;
+  border-bottom: 1px solid var(--border);
+  text-align: center;
 }
 
-td input {
-    width: 95%;
-    padding: 8px;
-    border: none;
-    background: rgba(255, 255, 255, 0.1);
-    color: var(--text-primary);
-    font-size: 14px;
-    text-align: center;
-    border-radius: 5px;
-    transition: all 0.3s ease-in-out;
+.tt-table tr:last-child td { border-bottom: none; }
+.tt-table tr:hover td { background: var(--card); }
+
+.time-col { min-width: 100px; }
+.action-col { width: 40px; }
+
+.time-input,
+.cell-input {
+  width: 100%;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text);
+  padding: 0.45rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  text-align: center;
+  outline: none;
+  transition: border-color 0.2s, background 0.2s;
+  font-family: inherit;
 }
 
-td input:focus {
-    outline: none;
-    box-shadow: 0 0 8px var(--secondary);
-    background: rgba(255, 255, 255, 0.3);
+.time-input { font-weight: 600; color: var(--primary); }
+
+.time-input:focus,
+.cell-input:focus {
+  border-color: var(--primary);
+  background: var(--primary-glow);
 }
 
-.buttons {
-    margin-top: 20px;
-    display: flex;
-    justify-content: center;
-    gap: 10px;
+.cell-input::placeholder { color: var(--text-3); }
+
+.row-delete {
+  background: transparent;
+  border: none;
+  color: var(--text-2);
+  cursor: pointer;
+  font-size: 0.8rem;
+  padding: 4px 6px;
+  border-radius: 4px;
+  transition: color 0.2s;
 }
+.row-delete:hover { color: var(--danger); }
 
-.ttbuttons {
-    background: var(--accent);
-    color: white;
-    border: none;
-    padding: 12px 18px;
-    font-size: 16px;
-    cursor: pointer;
-    border-radius: 25px;
-    transition: all 0.3s ease-in-out;
-    box-shadow: 0px 5px 15px rgba(255, 75, 43, 0.4);
-}
-
-.ttbuttons:hover {
-    background: var(--primary);
-    transform: scale(1.05);
-}
-
-@media (max-width: 768px) {
-    .container {
-        width: 95%;
-    }
-
-    table, th, td {
-        font-size: 12px;
-    }
-
-    td input {
-        font-size: 12px;
-        padding: 5px;
-    }
-
-    .ttbuttons {
-        font-size: 14px;
-        padding: 10px 15px;
-    }
+@media (max-width: 600px) {
+  .tt-header { flex-direction: column; align-items: flex-start; }
 }

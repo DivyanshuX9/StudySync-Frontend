@@ -1,0 +1,17 @@
+{
+  "files": {
+    "main.css": "/static/css/main.6476b0e8.css",
+    "main.js": "/static/js/main.acc66100.js",
+    "static/js/453.06ab8bbf.chunk.js": "/static/js/453.06ab8bbf.chunk.js",
+    "static/media/google-logo-png-google-icon-logo-png-transparent-svg-vector-bie-supply-14.png": "/static/media/google-logo-png-google-icon-logo-png-transparent-svg-vector-bie-supply-14.6bc7d49355c4e25579a0.png",
+    "static/media/notification-off-269282.mp3": "/static/media/notification-off-269282.67652311bf065a8de6c6.mp3",
+    "index.html": "/index.html",
+    "main.6476b0e8.css.map": "/static/css/main.6476b0e8.css.map",
+    "main.acc66100.js.map": "/static/js/main.acc66100.js.map",
+    "453.06ab8bbf.chunk.js.map": "/static/js/453.06ab8bbf.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.6476b0e8.css",
+    "static/js/main.acc66100.js"
+  ]
+}
