@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
 
 const WeatherContext = createContext();
 
@@ -26,10 +26,21 @@ function getTimeOfDay() {
   return h >= 6 && h < 20 ? "day" : "night";
 }
 
+const ALLOWED_GEOCODE_HOST = "geocoding-api.open-meteo.com";
+const ALLOWED_WEATHER_HOST  = "api.open-meteo.com";
+const ALLOWED_NOMINATIM_HOST = "nominatim.openstreetmap.org";
+
+function safeUrl(base, params) {
+  const url = new URL(base);
+  Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+  return url;
+}
+
 async function geocodeCity(city) {
-  const res = await fetch(
-    `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=en&format=json`
-  );
+  const url = safeUrl(`https://${ALLOWED_GEOCODE_HOST}/v1/search`, {
+    name: city, count: "1", language: "en", format: "json",
+  });
+  const res = await fetch(url.toString());
   const data = await res.json();
   if (!data.results?.length) throw new Error("City not found");
   const { latitude, longitude, name, country } = data.results[0];
@@ -37,8 +48,12 @@ async function geocodeCity(city) {
 }
 
 async function fetchWeather(lat, lon) {
-  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weathercode,windspeed_10m,precipitation&timezone=auto`;
-  const res = await fetch(url);
+  const url = safeUrl(`https://${ALLOWED_WEATHER_HOST}/v1/forecast`, {
+    latitude: lat, longitude: lon,
+    current: "temperature_2m,weathercode,windspeed_10m,precipitation",
+    timezone: "auto",
+  });
+  const res = await fetch(url.toString());
   if (!res.ok) throw new Error("Weather fetch failed");
   const data = await res.json();
   const c = data.current;
@@ -57,8 +72,13 @@ export const WeatherProvider = ({ children }) => {
   const [location, setLocation] = useState("Detecting…");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  // isNight is the day/night toggle — starts from real time, user can flip it
-  const [isNight, setIsNight] = useState(() => getTimeOfDay() === "night");
+  // isNight is the day/night toggle - starts from real time, user can flip it
+  // Seed from sessionStorage to avoid flash on refresh
+  const [isNight, setIsNight] = useState(() => {
+    const stored = sessionStorage.getItem("ss_last_tone");
+    if (stored) return stored.endsWith("_night");
+    return getTimeOfDay() === "night";
+  });
 
   const loadWeather = useCallback(async (lat, lon, name) => {
     setLoading(true);
@@ -95,9 +115,10 @@ export const WeatherProvider = ({ children }) => {
     navigator.geolocation.getCurrentPosition(
       async ({ coords: { latitude: lat, longitude: lon } }) => {
         try {
-          const res = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`
-          );
+          const revUrl = safeUrl(`https://${ALLOWED_NOMINATIM_HOST}/reverse`, {
+            lat, lon, format: "json",
+          });
+          const res = await fetch(revUrl.toString());
           const d = await res.json();
           const name = d.address?.city || d.address?.town || d.address?.state || "Your Location";
           loadWeather(lat, lon, name);
@@ -110,9 +131,15 @@ export const WeatherProvider = ({ children }) => {
   }, [loadWeather]);
 
   // Expose the full tone key: e.g. "rain_night", "sunny_day"
+  // Seed from sessionStorage so refresh doesn't flash a different tone
   const toneKey = weather
     ? `${weather.condition.key}_${isNight ? "night" : "day"}`
-    : "sunny_day";
+    : (sessionStorage.getItem("ss_last_tone") || "sunny_day");
+
+  // Keep sessionStorage in sync
+  useEffect(() => {
+    if (weather) sessionStorage.setItem("ss_last_tone", toneKey);
+  }, [toneKey, weather]);
 
   return (
     <WeatherContext.Provider value={{

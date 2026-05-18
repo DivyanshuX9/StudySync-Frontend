@@ -1,11 +1,21 @@
-import React, { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { auth, onAuthStateChanged } from "./firebase";
-import Navbar from "./Navbar";
 import "./FlashCards.css";
+import GuestBanner from "./GuestBanner";
+import Navbar from "./Navbar";
+import PageBackground from "./PageBackground";
 
 const FlashCards = () => {
   const [user, setUser] = useState(null);
-  const [decks, setDecks] = useState(() => JSON.parse(localStorage.getItem("ss-decks")) || []);
+  const [decks, setDecks] = useState(() => {
+    try {
+      const stored = localStorage.getItem("ss-decks");
+      return stored ? JSON.parse(stored) : [];
+    } catch (err) {
+      console.error("Failed to parse decks from localStorage:", err);
+      return [];
+    }
+  });
   const [activeDeck, setActiveDeck] = useState(null);
   const [cardIndex, setCardIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
@@ -14,6 +24,7 @@ const FlashCards = () => {
   const [newQ, setNewQ] = useState("");
   const [newA, setNewA] = useState("");
   const [addingCard, setAddingCard] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => { const u = onAuthStateChanged(auth, setUser); return u; }, []);
   useEffect(() => { localStorage.setItem("ss-decks", JSON.stringify(decks)); }, [decks]);
@@ -46,9 +57,10 @@ const FlashCards = () => {
         ? { ...d, cards: d.cards.filter((c) => c.id !== cardId) }
         : d
     );
+    const updatedDeck = updated.find((d) => d.id === activeDeck.id);
     setDecks(updated);
-    setActiveDeck(updated.find((d) => d.id === activeDeck.id));
-    if (cardIndex >= activeDeck.cards.length - 1) setCardIndex(0);
+    setActiveDeck(updatedDeck);
+    if (cardIndex >= updatedDeck.cards.length) setCardIndex(0);
   };
 
   const startStudy = (deck) => {
@@ -56,6 +68,7 @@ const FlashCards = () => {
     setCardIndex(0);
     setFlipped(false);
     setScore({ know: 0, dontKnow: 0 });
+    setIsEditing(false);
   };
 
   const next = (knew) => {
@@ -70,7 +83,9 @@ const FlashCards = () => {
 
   return (
     <div className="page-wrapper">
+      <PageBackground />
       <Navbar user={user} />
+      {!user && <GuestBanner />}
       <div className="fc-page">
         <h1 className="page-title">Flashcards</h1>
 
@@ -101,8 +116,8 @@ const FlashCards = () => {
           </div>
         )}
 
-        {/* Done screen */}
-        {activeDeck && done && (
+        {/* Done screen - only when not in edit mode */}
+        {activeDeck && done && !isEditing && (
           <div className="study-done">
             <div className="done-card">
               <h2>Session Complete! 🎉</h2>
@@ -122,7 +137,7 @@ const FlashCards = () => {
               </div>
               <div className="done-actions">
                 <button className="btn-retry" onClick={() => startStudy(activeDeck)}>Retry</button>
-                <button className="btn-back" onClick={() => setActiveDeck(null)}>Back to Decks</button>
+                <button className="btn-back" onClick={() => { setActiveDeck(null); setIsEditing(false); }}>Back to Decks</button>
               </div>
             </div>
           </div>
@@ -154,7 +169,7 @@ const FlashCards = () => {
                     <button className="btn-study" onClick={() => startStudy(deck)} disabled={!deck.cards.length}>
                       Study
                     </button>
-                    <button className="btn-edit" onClick={() => { setActiveDeck(deck); setCardIndex(deck.cards.length); }}>
+                    <button className="btn-edit" onClick={() => { setActiveDeck(deck); setCardIndex(deck.cards.length); setIsEditing(true); }}>
                       Edit
                     </button>
                     <button className="btn-del" onClick={() => deleteDeck(deck.id)}>✕</button>
@@ -165,12 +180,12 @@ const FlashCards = () => {
           </>
         )}
 
-        {/* Edit deck (card index >= cards.length means edit mode) */}
-        {activeDeck && cardIndex >= activeDeck.cards.length && done && (
+        {/* Edit deck - entered via the Edit button */}
+        {activeDeck && isEditing && (
           <div className="edit-deck">
             <div className="edit-header">
               <h2>{activeDeck.name}</h2>
-              <button className="btn-back" onClick={() => setActiveDeck(null)}>← Back</button>
+              <button className="btn-back" onClick={() => { setActiveDeck(null); setIsEditing(false); }}>← Back</button>
             </div>
             <button className="btn-add-card" onClick={() => setAddingCard(true)}>+ Add Card</button>
             {addingCard && (
