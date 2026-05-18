@@ -12,11 +12,41 @@ const firebaseConfig = {
   measurementId:     process.env.REACT_APP_FIREBASE_MEASUREMENT_ID,
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const firestore = getFirestore(app);
-const provider = new GoogleAuthProvider();
+// Check if Firebase config is complete
+const isFirebaseConfigured = Object.values(firebaseConfig).every(val => val !== undefined && val !== '');
 
-export { auth, firestore, provider, signOut, onAuthStateChanged };
+// Initialize Firebase
+let app, auth, firestore, provider;
+
+if (isFirebaseConfigured) {
+  try {
+    app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    firestore = getFirestore(app);
+    provider = new GoogleAuthProvider();
+  } catch (error) {
+    console.error('Firebase initialization error:', error);
+    auth = null;
+    firestore = null;
+    provider = null;
+  }
+} else {
+  console.warn('Firebase configuration incomplete. Using guest mode.');
+  auth = null;
+  firestore = null;
+  provider = null;
+}
+
+// Fallback for onAuthStateChanged if Firebase is not initialized
+const safeOnAuthStateChanged = (authInstance, callback) => {
+  if (!authInstance) {
+    // If Firebase not initialized, treat user as guest (null)
+    callback(null);
+    return () => {};
+  }
+  return onAuthStateChanged(authInstance, callback);
+};
+
+export { auth, firestore, provider, signOut, safeOnAuthStateChanged, isFirebaseConfigured };
+export { safeOnAuthStateChanged as onAuthStateChanged };
 

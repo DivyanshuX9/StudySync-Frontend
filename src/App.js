@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
-import { auth, onAuthStateChanged } from "./components/firebase";
+import { auth, onAuthStateChanged, isFirebaseConfigured } from "./components/firebase";
 import { WeatherProvider, useWeather } from "./context/WeatherContext";
 
 import Chatbot        from "./components/Chatbot";
@@ -23,14 +23,23 @@ function ToneApplier() {
 }
 
 function App() {
-  const [user, setUser] = useState(undefined);
+  const [user, setUser] = useState(isFirebaseConfigured ? undefined : null);
+  const [loading, setLoading] = useState(isFirebaseConfigured);
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, setUser);
+    if (!isFirebaseConfigured) {
+      setLoading(false);
+      return;
+    }
+    const unsub = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setLoading(false);
+    });
     return unsub;
   }, []);
 
-  if (user === undefined) return null;
+  // Show loading state only if Firebase is configured
+  if (loading) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>Loading...</div>;
 
   return (
     <WeatherProvider>
