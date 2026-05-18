@@ -1,11 +1,21 @@
-import React, { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { auth, onAuthStateChanged } from "./firebase";
+import GuestBanner from "./GuestBanner";
 import Navbar from "./Navbar";
+import PageBackground from "./PageBackground";
 import "./SubjectManager.css";
 
 const SubjectManager = () => {
   const [user, setUser] = useState(null);
-  const [subjects, setSubjects] = useState(() => JSON.parse(localStorage.getItem("subjects")) || []);
+  const [subjects, setSubjects] = useState(() => {
+    try {
+      const stored = localStorage.getItem("subjects");
+      return stored ? JSON.parse(stored) : [];
+    } catch (err) {
+      console.error("Failed to parse subjects from localStorage:", err);
+      return [];
+    }
+  });
   const [newSubjectName, setNewSubjectName] = useState("");
   const [newChapterNames, setNewChapterNames] = useState({});
 
@@ -32,34 +42,44 @@ const SubjectManager = () => {
   const addChapter = (si) => {
     const name = newChapterNames[si]?.trim();
     if (!name) return;
-    const updated = [...subjects];
-    updated[si].chapters.push({ name, pdfs: [] });
-    setSubjects(updated);
+    setSubjects(subjects.map((s, i) =>
+      i === si ? { ...s, chapters: [...s.chapters, { name, pdfs: [] }] } : s
+    ));
     setNewChapterNames({ ...newChapterNames, [si]: "" });
   };
 
   const deleteChapter = (si, ci) => {
-    const updated = [...subjects];
-    updated[si].chapters.splice(ci, 1);
-    setSubjects([...updated]);
+    setSubjects(subjects.map((s, i) =>
+      i === si ? { ...s, chapters: s.chapters.filter((_, j) => j !== ci) } : s
+    ));
   };
 
   const uploadPDF = (si, ci, file) => {
     if (!file) return;
-    const updated = [...subjects];
-    updated[si].chapters[ci].pdfs.push(file.name);
-    setSubjects([...updated]);
+    setSubjects(subjects.map((s, i) =>
+      i === si
+        ? { ...s, chapters: s.chapters.map((ch, j) =>
+            j === ci ? { ...ch, pdfs: [...ch.pdfs, file.name] } : ch
+          )}
+        : s
+    ));
   };
 
   const deletePDF = (si, ci, pi) => {
-    const updated = [...subjects];
-    updated[si].chapters[ci].pdfs.splice(pi, 1);
-    setSubjects([...updated]);
+    setSubjects(subjects.map((s, i) =>
+      i === si
+        ? { ...s, chapters: s.chapters.map((ch, j) =>
+            j === ci ? { ...ch, pdfs: ch.pdfs.filter((_, k) => k !== pi) } : ch
+          )}
+        : s
+    ));
   };
 
   return (
     <div className="page-wrapper">
+      <PageBackground />
       <Navbar user={user} />
+      {!user && <GuestBanner />}
       <div className="sm-page">
         <h1 className="page-title">Subject Manager</h1>
 

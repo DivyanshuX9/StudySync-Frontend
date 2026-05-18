@@ -257,8 +257,17 @@
 @media (max-width: 640px) {
   .notes-layout {
     grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+    height: auto;
+    min-height: 100vh;
   }
   .notes-sidebar {
-    display: none;
+    display: flex;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    max-height: 45vh;
+  }
+  .notes-editor {
+    min-height: 55vh;
   }
 }

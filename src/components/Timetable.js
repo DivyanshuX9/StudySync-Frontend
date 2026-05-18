@@ -1,6 +1,8 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { auth, onAuthStateChanged } from "./firebase";
+import GuestBanner from "./GuestBanner";
 import Navbar from "./Navbar";
+import PageBackground from "./PageBackground";
 import "./Timetable.css";
 
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:8000";
@@ -9,8 +11,24 @@ const DEFAULT_TIMES = ["8:00 AM","9:00 AM","10:00 AM","11:00 AM","12:00 PM","1:0
 
 const Timetable = () => {
   const [user, setUser]         = useState(null);
-  const [timeSlots, setTimeSlots] = useState(() => JSON.parse(localStorage.getItem("timeSlots")) || DEFAULT_TIMES);
-  const [schedule, setSchedule]   = useState(() => JSON.parse(localStorage.getItem("studySchedule")) || {});
+  const [timeSlots, setTimeSlots] = useState(() => {
+    try {
+      const stored = localStorage.getItem("timeSlots");
+      return stored ? JSON.parse(stored) : DEFAULT_TIMES;
+    } catch (err) {
+      console.error("Failed to parse timeSlots from localStorage:", err);
+      return DEFAULT_TIMES;
+    }
+  });
+  const [schedule, setSchedule]   = useState(() => {
+    try {
+      const stored = localStorage.getItem("studySchedule");
+      return stored ? JSON.parse(stored) : {};
+    } catch (err) {
+      console.error("Failed to parse studySchedule from localStorage:", err);
+      return {};
+    }
+  });
   const [saved, setSaved]         = useState(false);
   const [parsing, setParsing]     = useState(false);
   const [parseError, setParseError] = useState("");
@@ -28,14 +46,17 @@ const Timetable = () => {
   };
 
   const handleCellChange = (day, time, val) => {
-    setSchedule({ ...schedule, [`${day}-${time}`]: val });
+    setSchedule({ ...schedule, [`${DAYS[day]}-${timeSlots[time]}`]: val });
   };
 
   const addRow    = () => setTimeSlots([...timeSlots, ""]);
   const deleteRow = (i) => {
     if (timeSlots.length <= 1) return;
+    const removedTime = timeSlots[i];
     setTimeSlots(timeSlots.filter((_, idx) => idx !== i));
-    setSchedule(Object.fromEntries(Object.entries(schedule).filter(([k]) => !k.endsWith(`-${i}`))));
+    setSchedule(Object.fromEntries(
+      Object.entries(schedule).filter(([k]) => !k.endsWith(`-${removedTime}`))
+    ));
   };
 
   const saveSchedule = () => { setSaved(true); setTimeout(() => setSaved(false), 2000); };
@@ -71,7 +92,9 @@ const Timetable = () => {
 
   return (
     <div className="page-wrapper">
+      <PageBackground />
       <Navbar user={user} />
+      {!user && <GuestBanner />}
       <div className="timetable-page">
         <div className="tt-header">
           <h1 className="page-title">Timetable</h1>
@@ -105,9 +128,9 @@ const Timetable = () => {
                   <td className="time-col">
                     <input type="text" value={time} onChange={e => handleTimeChange(ti, e.target.value)} placeholder="Time" className="time-input" />
                   </td>
-                  {DAYS.map((_, di) => (
+                  {DAYS.map((d, di) => (
                     <td key={di}>
-                      <input type="text" value={schedule[`${di}-${ti}`] || ""} onChange={e => handleCellChange(di, ti, e.target.value)} placeholder="—" className="cell-input" />
+                      <input type="text" value={schedule[`${d}-${time}`] || ""} onChange={e => handleCellChange(di, ti, e.target.value)} placeholder="—" className="cell-input" />
                     </td>
                   ))}
                   <td className="action-col">

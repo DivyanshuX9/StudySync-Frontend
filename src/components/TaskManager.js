@@ -1,11 +1,21 @@
-import React, { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { auth, onAuthStateChanged } from "./firebase";
+import GuestBanner from "./GuestBanner";
 import Navbar from "./Navbar";
+import PageBackground from "./PageBackground";
 import "./TaskManager.css";
 
 const TaskManager = () => {
   const [user, setUser] = useState(null);
-  const [tasks, setTasks] = useState(() => JSON.parse(localStorage.getItem("tasks")) || []);
+  const [tasks, setTasks] = useState(() => {
+    try {
+      const stored = localStorage.getItem("tasks");
+      return stored ? JSON.parse(stored) : [];
+    } catch (err) {
+      console.error("Failed to parse tasks from localStorage:", err);
+      return [];
+    }
+  });
   const [currentFilter, setCurrentFilter] = useState("all");
   const [taskTitle, setTaskTitle] = useState("");
   const [subject, setSubject] = useState("");
@@ -49,7 +59,9 @@ const TaskManager = () => {
 
   return (
     <div className="page-wrapper">
+      <PageBackground />
       <Navbar user={user} />
+      {!user && <GuestBanner />}
       <div className="task-manager">
         <h1 className="page-title">Task Manager</h1>
 

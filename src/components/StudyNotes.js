@@ -1,11 +1,21 @@
-import React, { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { auth, onAuthStateChanged } from "./firebase";
+import GuestBanner from "./GuestBanner";
 import Navbar from "./Navbar";
+import PageBackground from "./PageBackground";
 import "./StudyNotes.css";
 
 const StudyNotes = () => {
   const [user, setUser] = useState(null);
-  const [notes, setNotes] = useState(() => JSON.parse(localStorage.getItem("ss-notes")) || []);
+  const [notes, setNotes] = useState(() => {
+    try {
+      const stored = localStorage.getItem("ss-notes");
+      return stored ? JSON.parse(stored) : [];
+    } catch (err) {
+      console.error("Failed to parse notes from localStorage:", err);
+      return [];
+    }
+  });
   const [active, setActive] = useState(null);
   const [search, setSearch] = useState("");
   const [tagFilter, setTagFilter] = useState("");
@@ -61,7 +71,9 @@ const StudyNotes = () => {
 
   return (
     <div className="page-wrapper">
+      <PageBackground />
       <Navbar user={user} />
+      {!user && <GuestBanner />}
       <div className="notes-layout">
         {/* Sidebar */}
         <aside className="notes-sidebar">

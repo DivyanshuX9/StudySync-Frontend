@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { auth, provider } from './firebase'; // Ensure correct import
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, updateProfile } from 'firebase/auth';
-import './SignIn.css';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import googleLogo from '../assets/google-logo-png-google-icon-logo-png-transparent-svg-vector-bie-supply-14.png';
+import { auth, provider } from './firebase'; // Ensure correct import
+import './SignIn.css';
 
 const SignIn = () => {
   const [isSignIn, setIsSignIn] = useState(true);
@@ -17,8 +17,8 @@ const SignIn = () => {
     e.preventDefault();
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      navigate('/'); // Redirect to Landing Page
-    } catch (error) {
+      navigate('/');
+    } catch {
       setError('Invalid Credentials. Please try again.');
     }
   };
@@ -28,19 +28,15 @@ const SignIn = () => {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-
-      // If a name is provided, update the user profile
       if (name) {
         await updateProfile(user, { displayName: name });
       }
-
-      navigate('/'); // Redirect to Landing Page
-      window.location.reload(); // Ensure UI updates
-    } catch (error) {
-      if (error.code === 'auth/email-already-in-use') {
+      navigate('/');
+    } catch (err) {
+      if (err.code === 'auth/email-already-in-use') {
         setError('Sorry, these credentials are already taken.');
       } else {
-        setError(error.message);
+        setError(err.message);
       }
     }
   };
@@ -49,7 +45,7 @@ const SignIn = () => {
     try {
       await signInWithPopup(auth, provider);
       navigate('/');
-    } catch (error) {
+    } catch {
       setError('Google Sign-In failed. Please try again.');
     }
   };

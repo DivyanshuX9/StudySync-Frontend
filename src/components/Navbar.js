@@ -22,8 +22,8 @@ export default function Navbar({ user }) {
   return (
     <>
       {/* Desktop: pure floating text — no bg, no border */}
-      <nav className="navbar-desktop">
-        <Link to="/" className="nav-logo">
+      <nav className={`navbar-desktop ${isNight ? 'text-white' : 'text-black'}`}>
+        <Link to="/" className="nav-logo text-inherit">
           <Logo size={28} />
           <span>StudySync</span>
         </Link>
@@ -31,7 +31,7 @@ export default function Navbar({ user }) {
           {NAV_LINKS.map(({ label, path }) => (
             <Link
               key={path}
-              to={user ? path : "/signin"}
+              to={path}
               className={`nav-link ${location.pathname === path ? "active" : ""}`}
             >
               {label}
@@ -112,7 +112,7 @@ function DynamicIsland({ user, isNight, setIsNight, handleLogout }) {
             {user && <p className="island-greeting">{getGreeting(user.displayName)}</p>}
             <div className="island-grid">
               {NAV_LINKS.map(({ label, path }) => (
-                <Link key={path} to={user ? path : "/signin"} className="island-link" onClick={() => setExpanded(false)}>
+                <Link key={path} to={path} className="island-link" onClick={() => setExpanded(false)}>
                   {label}
                 </Link>
               ))}

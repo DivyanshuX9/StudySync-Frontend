@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Navigate, Route, BrowserRouter as Router, Routes } from "react-router-dom";
+import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import { auth, onAuthStateChanged } from "./components/firebase";
 import { WeatherProvider, useWeather } from "./context/WeatherContext";
 
@@ -32,8 +32,6 @@ function App() {
 
   if (user === undefined) return null;
 
-  const guard = (el) => (user ? el : <Navigate to="/signin" replace />);
-
   return (
     <WeatherProvider>
       <Router>
@@ -41,13 +39,13 @@ function App() {
         <Routes>
           <Route path="/"                element={<LandingPage user={user} />} />
           <Route path="/signin"          element={<SignIn />} />
-          <Route path="/tasks"           element={guard(<TaskManager />)} />
-          <Route path="/pomodoro"        element={guard(<PomodoroTimer />)} />
-          <Route path="/timetable"       element={guard(<Timetable />)} />
-          <Route path="/subject-manager" element={guard(<SubjectManager />)} />
-          <Route path="/chatbot"         element={guard(<Chatbot />)} />
-          <Route path="/flashcards"      element={guard(<FlashCards />)} />
-          <Route path="/notes"           element={guard(<StudyNotes />)} />
+          <Route path="/tasks"           element={<TaskManager   user={user} />} />
+          <Route path="/pomodoro"        element={<PomodoroTimer user={user} />} />
+          <Route path="/timetable"       element={<Timetable     user={user} />} />
+          <Route path="/subject-manager" element={<SubjectManager user={user} />} />
+          <Route path="/chatbot"         element={<Chatbot       user={user} />} />
+          <Route path="/flashcards"      element={<FlashCards    user={user} />} />
+          <Route path="/notes"           element={<StudyNotes    user={user} />} />
         </Routes>
       </Router>
     </WeatherProvider>
