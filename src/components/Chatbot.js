@@ -1,12 +1,14 @@
+import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import "./Chatbot.css";
 import { auth, onAuthStateChanged } from "./firebase";
 import GuestBanner from "./GuestBanner";
 import Navbar from "./Navbar";
 import PageBackground from "./PageBackground";
-import "./Chatbot.css";
 
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:8000";
+const RAW_API_URL = process.env.REACT_APP_API_URL || "http://localhost:8000";
+const API_CANDIDATES = RAW_API_URL.split(',').map(s => s.trim().replace(/\/$/, '')).filter(Boolean);
+const DEFAULT_API = API_CANDIDATES[0] || "http://localhost:8000";
 
 const SUGGESTIONS = [
   "Explain the Pythagorean theorem",
@@ -49,6 +51,7 @@ function Chatbot() {
   const [inputType, setInputType]     = useState("text");
   const [additionalInput, setAdditionalInput] = useState("");
   const [serverOk, setServerOk]       = useState(null);
+  const [apiUrl, setApiUrl]           = useState(DEFAULT_API);
   const [newMsgIdx, setNewMsgIdx]     = useState(-1);
   const [chatHistory, setChatHistory] = useState([{
     sender: "Darwin",
@@ -66,14 +69,35 @@ function Chatbot() {
   useEffect(() => { const u = onAuthStateChanged(auth, setUser); return u; }, []);
 
   useEffect(() => {
-    const check = async (attempt = 0) => {
-      try {
-        const res = await fetch(`${API_URL}/health`, { signal: AbortSignal.timeout(5000) });
-        setServerOk(res.ok);
-      } catch {
-        if (attempt < 2) setTimeout(() => check(attempt + 1), 3000);
-        else setServerOk(false);
+    const check = async () => {
+      // Try each candidate in order and pick the first reachable backend
+      for (const candidate of API_CANDIDATES) {
+        try {
+          const res = await fetch(`${candidate}/health`, { signal: AbortSignal.timeout(5000) });
+          if (res.ok) {
+            setApiUrl(candidate);
+            setServerOk(true);
+            return;
+          }
+        } catch (e) {
+          // try next candidate
+        }
       }
+      // retry a couple times before marking offline
+      try {
+        await new Promise(r => setTimeout(r, 2000));
+        for (const candidate of API_CANDIDATES) {
+          try {
+            const res = await fetch(`${candidate}/health`, { signal: AbortSignal.timeout(5000) });
+            if (res.ok) {
+              setApiUrl(candidate);
+              setServerOk(true);
+              return;
+            }
+          } catch {}
+        }
+      } catch {}
+      setServerOk(false);
     };
     check();
   }, []);
@@ -97,7 +121,8 @@ function Chatbot() {
 
     if (serverOk === false) {
       addMsg("Darwin", "🔄 Waking up the server… This may take 30–60 seconds. Please wait.");
-      fetch(`${API_URL}/health`).catch(() => {});
+      // Attempt to wake each candidate
+      for (const c of API_CANDIDATES) fetch(`${c}/health`).catch(() => {});
     }
 
     addMsg("You", userText);
@@ -108,7 +133,7 @@ function Chatbot() {
       let res;
       const opts = { signal: AbortSignal.timeout(90000) };
       if (inputType === "text") {
-        res = await fetch(`${API_URL}/chat`, {
+        res = await fetch(`${apiUrl}/chat`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ prompt: userText, inputType, additionalInput }),
@@ -119,7 +144,7 @@ function Chatbot() {
         fd.append("file", file);
         fd.append("inputType", inputType);
         fd.append("additionalInput", additionalInput);
-        res = await fetch(`${API_URL}/chat`, { method: "POST", body: fd, ...opts });
+        res = await fetch(`${apiUrl}/chat`, { method: "POST", body: fd, ...opts });
       }
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
