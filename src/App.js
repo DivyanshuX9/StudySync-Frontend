@@ -1,17 +1,17 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
-import { auth, onAuthStateChanged, isFirebaseConfigured } from "./components/firebase";
+import { auth, isFirebaseConfigured, onAuthStateChanged } from "./components/firebase";
 import { WeatherProvider, useWeather } from "./context/WeatherContext";
 
-import Chatbot        from "./components/Chatbot";
-import FlashCards     from "./components/FlashCards";
-import LandingPage    from "./components/LandingPage";
-import PomodoroTimer  from "./components/PomodoroTimer";
-import SignIn         from "./components/SignIn";
-import StudyNotes     from "./components/StudyNotes";
+import Chatbot from "./components/Chatbot";
+import FlashCards from "./components/FlashCards";
+import LandingPage from "./components/LandingPage";
+import PomodoroTimer from "./components/PomodoroTimer";
+import SignIn from "./components/SignIn";
+import StudyNotes from "./components/StudyNotes";
 import SubjectManager from "./components/SubjectManager";
-import TaskManager    from "./components/TaskManager";
-import Timetable      from "./components/Timetable";
+import TaskManager from "./components/TaskManager";
+import Timetable from "./components/Timetable";
 
 // Apply data-tone to <html> globally so inner pages also get the right tone
 function ToneApplier() {

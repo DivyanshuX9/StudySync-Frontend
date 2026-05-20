@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, signOut, onAuthStateChanged, GoogleAuthProvider } from "firebase/auth";
+import { getAuth, GoogleAuthProvider, onAuthStateChanged, signOut } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
@@ -47,6 +47,5 @@ const safeOnAuthStateChanged = (authInstance, callback) => {
   return onAuthStateChanged(authInstance, callback);
 };
 
-export { auth, firestore, provider, signOut, safeOnAuthStateChanged, isFirebaseConfigured };
-export { safeOnAuthStateChanged as onAuthStateChanged };
+export { auth, firestore, isFirebaseConfigured, safeOnAuthStateChanged as onAuthStateChanged, provider, safeOnAuthStateChanged, signOut };
 
