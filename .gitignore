@@ -1,2 +1,13 @@
 node_modules
 .env
+# Build outputs
+/build/
+
+# Temporary files
+/temp/
+
+# Source map files
+*.map
+
+# Ignore generated license/text files
+*.LICENSE.txt
